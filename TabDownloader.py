@@ -96,12 +96,13 @@ class TabDownloader:
         tab_data.tabber = None
         
         t_dtde = soup.find_all("div", attrs={"class":"t_dtde"})
-        if (len(t_dtde) == 3):
+        if len(t_dtde) == 3:
             shift = 0
             tab_data.tabber = t_dtde[0].text.strip()
-        
-        # Get instruments
-        tab_data.instruments = t_dtde[2-shift].text.strip().split(",")
+  	
+	if len(t_dtde) > 1:
+            # Get instruments
+            tab_data.instruments = t_dtde[2-shift].text.strip().split(",")
         
         # Get rating
         tab_data.rating = len(soup.find_all("a", attrs={"class":"cur"}))
