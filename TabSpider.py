@@ -30,7 +30,7 @@ class TabSpider:
         
         # Get page
         self.wait()
-        print "retrieving " + url
+        print "retrieving " + url[31:]
         request = requests.get(url)
         soup = BeautifulSoup(request.text)
         
@@ -63,14 +63,14 @@ class TabSpider:
         
         # Get page
         self.wait()
-        print "retrieving " + artist_url
+        print "retrieving " + artist_url[31:]
         request = requests.get(artist_url)
         soup = BeautifulSoup(request.text)
         
         # Get all guitar pro links
         tab_links = soup.find_all("a",href=re.compile("tabs\."+self.domain),text=re.compile("Guitar Pro Tab"));
         for link in tab_links:
-            self.tab_urls.append(link)
+            self.tab_urls.append(link.get("href"))
             
         # get page listing if new
         if not page:

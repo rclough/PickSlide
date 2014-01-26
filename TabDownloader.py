@@ -6,14 +6,21 @@ from os.path import join
 import re
 import ast
 import time
+from TabSpider import TabSpider
+from TabData import TabData
+from User import User
+from Comment import Comment
+
+
 
 class TabDownloader:
-    def __init__(self, domain, tab_page, salt, tab_dir=""):
+    def __init__(self, domain, tab_page, salt,delay, tab_dir=""):
         self.domain = domain    
         self.tab_page = tab_page
         self.salt = salt
         self.tab_dir=tab_dir
         self.last_time = 0
+	self.delay = delay
         
     def process_comment(self,comment):
         result = Comment()
@@ -33,7 +40,7 @@ class TabDownloader:
         return result
         
     def tab_download(self, request_url, get_comments=False):
-        print"Getting info on tab "+request_url
+        print"Getting info on tab "+ request_url[31:]
         # TabData file, will be returned at the end
         tab_data = TabData()
         

@@ -4,6 +4,10 @@ from bulbs.neo4jserver import Graph, Config, NEO4J_URI
 import sys
 from UserDownloader import UserDownloader
 from TabDownloader import TabDownloader
+from TabSpider import TabSpider
+from TabData import TabData
+from User import User
+from Comment import Comment
 
 def main(argv=None):
     # Config processing
@@ -13,7 +17,7 @@ def main(argv=None):
     salt = config.get('info', 'salt')
     tab_page = config.get('info','tab_page')
     domain = config.get('info','domain')
-    delay = config.get('info', 'delay')
+    delay = int(config.get('info', 'delay'))
     
     # Start graph
     config = Config(NEO4J_URI)
@@ -25,7 +29,7 @@ def main(argv=None):
     instruments = {}
     
     # Make page crawlers
-    tab_loader = TabDownloader(domain, tab_page, salt)
+    tab_loader = TabDownloader(domain, tab_page, salt, delay)
     user_loader = UserDownloader(domain, delay)
     
     # Unofficial iterator
@@ -47,15 +51,15 @@ def main(argv=None):
             tab_node.tab_file = tab_info.tab_file
             tab_node.title = tab_info.title
             tab_node.version = tab_info.version
-            tab_node.rating = tab_info.rat
+            tab_node.rating = tab_info.rating
             tab_node.num_ratings = tab_info.num_ratings
             tab_node.num_comments = tab_info.num_comments
             tab_node.label = "tab"
             tab_node.save()
             
             # Add instruments
-            for instrument in tab_node.instruments:
-                if instruments not in instruments:
+            for instrument in tab_info.instruments:
+                if instrument not in instruments.keys():
                     i_node = g.vertices.create(name=instrument)
                     i_node.label = "instrument"
                     i_node.save()
@@ -64,18 +68,21 @@ def main(argv=None):
                 g.edges.create(tab_node,"has_instrument",i_node)
             
             # Add comments (recursive)
-            for comment in tab_info.comments:
-                g.edges.create(tab_node,"has_comment",save_comment(g, comment))
-            
-
-            tab_attr(("tabber",tab_info.tabber ))
+            if tab_info.comments:
+                for comment in tab_info.comments:
+                    g.edges.create(tab_node,"has_comment",save_comment(g, comment))
             
             # Get info on the tabber if we don't have it
             if tab_info.tabber:
-                if tab_info.tabber not in users:
+                if tab_info.tabber not in users.keys():
                     tabber = user_loader.load_user(tab_info.tabber)
+		    if not tabber:
+                        continue
                     # create user node for tabber
-                    u_node = g.vertices.create(name=tabber.name)
+                    tempname = tabber.name
+                    if not tempname:
+                        tempname = ""
+                    u_node = g.vertices.create(name=tabber.tempname)
                     u_node.registration_date = tabber.registration_date
                     u_node.num_contributions = tabber.num_contributions
                     u_node.rank = tabber.rank

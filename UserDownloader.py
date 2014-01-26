@@ -1,16 +1,19 @@
 import requests
 from bs4 import BeautifulSoup
 import time
+from User import User
+import re
 
 class UserDownloader:
-    def __init__(self, domain):
+    def __init__(self, domain, delay):
         self.domain = domain
+	self.delay = delay
         self.last_time = 0
         
     def load_user(self, username):
         self.wait()
         print "Getting info on user " + username
-        request = requests.get("http://profile."+domain+"/"+username+"/")
+        request = requests.get("http://profile."+self.domain+"/"+username+"/")
         soup = BeautifulSoup(request.text)
         user = User(username)
         
